@@ -80,7 +80,8 @@ def cli():
 @click.argument("file_path")
 @click.option("--function", "-f", default=None, help="指定要分析的函数名")
 @click.option("--no-llm", is_flag=True, help="不调用 LLM（仅启发式分析）")
-def analyze(file_path: str, function: str = None, no_llm: bool = False):
+@click.option("--output", "-o", default=None, help="输出报告文件路径")
+def analyze(file_path: str, function: str = None, no_llm: bool = False, output: str = None):
     """运行完整的性能分析流水线"""
     print_header()
 
@@ -167,6 +168,20 @@ def analyze(file_path: str, function: str = None, no_llm: bool = False):
     )
 
     console.print(table)
+
+    # 保存报告
+    if output:
+        report = {
+            "file_path": file_path,
+            "function": function,
+            "profile": profile_result,
+            "analysis": analysis_result,
+            "optimization": optimization_result,
+            "validation": validation_result,
+        }
+        with open(output, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        console.print(f"\n[green][OK] 报告已保存到 {output}[/green]")
 
     if client:
         client.close()
